@@ -65,20 +65,34 @@ class Actions():
         folder = fd.askdirectory(title='Select a folder')
         if len(folder) > 0:
             self.current_folder.set(folder)
+            
             # get list of audio files in folder
             filetypes = ['.wav', '.WAV', '.mp3', '.MP3']
             self.audio_files = []
             for filetype in filetypes:
                 self.audio_files.extend(
                     [filename for filename in pathlib.Path(folder).rglob('*' + filetype)])
+
+            #how many files
             self.num_files.set(len(self.audio_files))
+
+            #show the first file
             self.file_counter = 0
             audio_file = self.audio_files[self.file_counter]
             self.current_file.set(audio_file)
             self.open_audio_file(file=audio_file)
 
-    def file_next(self):
+    def file_forward(self):
         self.file_counter = self.file_counter + 1
+        audio_file = self.audio_files[self.file_counter]
+        self.current_file.set(audio_file)
+        self.open_audio_file(file=audio_file)
+
+    def file_backward(self):
+        self.file_counter = self.file_counter - 1
+        audio_file = self.audio_files[self.file_counter]
+        self.current_file.set(audio_file)
+        self.open_audio_file(file=audio_file)
 
     def open_audio_file(self, file):
         print("Open file")
@@ -202,6 +216,10 @@ class Page_multiple(Page):
         button_select_folder = tk.Button(
             actionsframe, text="Select folder", command=lambda: actions.select_folder())
         button_select_folder.pack(side="left", anchor='nw', padx=5, pady=5)
+        button_backward = tk.Button(actionsframe, text="Previous file", command=lambda: actions.file_backward())
+        button_backward.pack(side="left", anchor='nw', padx=5, pady=5)
+        button_forward = tk.Button(actionsframe, text="Next file", command=lambda: actions.file_forward())
+        button_forward.pack(side="left", anchor='nw', padx=5, pady=5)
 
         # labels
         label_Folder = tk.Label(infoframe1, text='Folder:', bg='white')
