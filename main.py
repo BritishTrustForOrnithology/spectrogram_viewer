@@ -37,13 +37,15 @@ class Actions():
         self.parent = parent
 
         # Config settings
-        self.maxduration = 4.0  # Maximum clip duration to allow a spectrogram to be shown
+        self.maxduration = 10.0  # Maximum clip duration to allow a spectrogram to be shown
         self.fileopentypes = (
             ('Wav files', '*.wav'),
             ('All files', '*.*')
         )
 
         # Internal dynamic parameters
+        self.file_counter = tk.IntVar()
+        self.file_counter_display = tk.IntVar()
         self.current_file = tk.StringVar()
         self.current_folder = tk.StringVar()
         self.num_files = tk.IntVar()
@@ -67,7 +69,7 @@ class Actions():
             self.current_folder.set(folder)
             
             # get list of audio files in folder
-            filetypes = ['.wav', '.WAV', '.mp3', '.MP3']
+            filetypes = ['.wav', '.mp3']
             self.audio_files = []
             for filetype in filetypes:
                 self.audio_files.extend(
@@ -77,22 +79,26 @@ class Actions():
             self.num_files.set(len(self.audio_files))
 
             #show the first file
-            self.file_counter = 0
-            audio_file = self.audio_files[self.file_counter]
+            self.file_counter.set(0)
+            audio_file = self.audio_files[self.file_counter.get()]
+            self.file_counter_display.set(self.file_counter.get() + 1)
             self.current_file.set(audio_file)
             self.open_audio_file(file=audio_file)
 
-    def file_forward(self):
-        self.file_counter = self.file_counter + 1
-        audio_file = self.audio_files[self.file_counter]
+    def file_jump(self, jump: int=1):
+        self.file_counter.set(self.file_counter.get() + jump)
+        if self.file_counter.get()<0:
+            tk.messagebox.showwarning(title='Out of range', message="Tried to jump beyond list. Set to 1st file")
+            self.file_counter.set(0)
+        if self.file_counter.get() > self.num_files.get():
+            tk.messagebox.showwarning(title='Out of range', message="Tried to jump beyond list. Set to last file")
+            self.file_counter.set(self.num_files.get())
+        
+        self.file_counter_display.set(self.file_counter.get() + 1)
+        audio_file = self.audio_files[self.file_counter.get()]
         self.current_file.set(audio_file)
         self.open_audio_file(file=audio_file)
 
-    def file_backward(self):
-        self.file_counter = self.file_counter - 1
-        audio_file = self.audio_files[self.file_counter]
-        self.current_file.set(audio_file)
-        self.open_audio_file(file=audio_file)
 
     def open_audio_file(self, file):
         print("Open file")
@@ -216,10 +222,12 @@ class Page_multiple(Page):
         button_select_folder = tk.Button(
             actionsframe, text="Select folder", command=lambda: actions.select_folder())
         button_select_folder.pack(side="left", anchor='nw', padx=5, pady=5)
-        button_backward = tk.Button(actionsframe, text="Previous file", command=lambda: actions.file_backward())
+        button_backward = tk.Button(actionsframe, text="Previous file", command=lambda: actions.file_jump(-1))
         button_backward.pack(side="left", anchor='nw', padx=5, pady=5)
-        button_forward = tk.Button(actionsframe, text="Next file", command=lambda: actions.file_forward())
+        button_forward = tk.Button(actionsframe, text="Next file", command=lambda: actions.file_jump(1))
         button_forward.pack(side="left", anchor='nw', padx=5, pady=5)
+        button_forward100 = tk.Button(actionsframe, text="Jump 100", command=lambda: actions.file_jump(100))
+        button_forward100.pack(side="left", anchor='nw', padx=5, pady=5)
 
         # labels
         label_Folder = tk.Label(infoframe1, text='Folder:', bg='white')
@@ -227,20 +235,23 @@ class Page_multiple(Page):
         label_folder = tk.Label(
             infoframe1, textvariable=actions.current_folder, bg='white')
         label_folder.pack(side="left", pady=2)
+        
         label_NumFiles = tk.Label(infoframe2, text='Num files:', bg='white')
         label_NumFiles.pack(side="left", anchor='nw', padx=10, pady=2)
-        label_numfiles = tk.Label(
-            infoframe2, textvariable=actions.num_files, bg='white')
+        
+        label_counter = tk.Label(infoframe2, textvariable=actions.file_counter_display, bg='white')
+        label_counter.pack(side="left", pady=2)
+        label_of = tk.Label(infoframe2, text='of', bg='white')
+        label_of.pack(side="left", anchor='nw', padx=10, pady=2)
+        label_numfiles = tk.Label(infoframe2, textvariable=actions.num_files, bg='white')
         label_numfiles.pack(side="left", pady=2)
         label_Filename = tk.Label(infoframe3, text='File:', bg='white')
         label_Filename.pack(side="left", anchor='nw', padx=10, pady=2)
-        label_filename = tk.Label(
-            infoframe3, textvariable=actions.current_file, bg='white')
+        label_filename = tk.Label(infoframe3, textvariable=actions.current_file, bg='white')
         label_filename.pack(side="left", pady=2)
         label_Duration = tk.Label(infoframe4, text='Length(s):', bg='white')
         label_Duration.pack(side="left", anchor='nw', padx=10, pady=2)
-        label_duration = tk.Label(
-            infoframe4, textvariable=actions.duration, bg='white')
+        label_duration = tk.Label(infoframe4, textvariable=actions.duration, bg='white')
         label_duration.pack(side="left", pady=2)
 
 
