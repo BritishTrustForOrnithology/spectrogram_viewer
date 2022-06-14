@@ -2,10 +2,19 @@
 """
 App to view Spectrograms
 
+Select Single File to view/play a single audio file
+Select Multiple Files to browse through audio files in a folder. Optionally move 
+files to True (TruePos), False (FalsePos) or Uncertain (Uncertain) folders. 
+Optionally also add species-specific buttons for files to be relabelled as 
+something completely different 
+
+When moving files, don't use back button as haven't added functionality to 
+rebuild array of files once a file has been moved.
+
 Simon Gillings
 June 2022
 
-This layout is based on the following post which shows how to use frames as pages:
+Tips on multiple 'page' layout from::
 https://stackoverflow.com/questions/14817210/using-buttons-in-tkinter-to-navigate-to-different-pages-of-the-application
 
 
@@ -139,7 +148,7 @@ class Actions():
         D = librosa.amplitude_to_db(np.abs(librosa.stft(x, n_fft = 1024, hop_length=256, win_length=1024)), ref=np.max)
         # determine x scale
         #print(D.shape)
-        xsteps = D.shape[1] / self.duration.get()
+        #xsteps = D.shape[1] / self.duration.get()
         #print(xsteps)
         # adding the subplot
         self.parent.ax.clear()
@@ -164,57 +173,72 @@ class Actions():
 
         # playsound locks files and causes problems when moving
         # playsound(self.current_file.get())
-
-
-        
-        
-
-
-    def make_folder_FP(self):
-        """
-        Make a folder to move False Positive clips to
-        """
-        path_FP = os.path.join(self.current_folder.get(), 'FP')
-        if not os.path.exists(path_FP):
-            os.mkdir(path_FP)
-        return path_FP
-
-    def make_folder_QQ(self):
-        """
-        Make a folder to move Uncertain clips to
-        """
-        path_QQ = os.path.join(self.current_folder.get(), 'QQ')
-        if not os.path.exists(path_QQ):
-            os.mkdir(path_QQ)
-        return path_QQ
     
 
-    def identification_true(self):
-        self.file_jump(1)
 
+    def make_folder(self, foldername):
+        """
+        Make a folder to move verified clips to
+        """
+        path = os.path.join(self.current_folder.get(), foldername)
+        if not os.path.exists(path):
+            os.mkdir(path)
+        return path
 
-    def identification_false(self):
-        #make the folder to hold the false positive
-        path_FP = self.make_folder_FP()
+    # def make_folder_FP(self):
+    #     """
+    #     Make a folder to move False Positive clips to
+    #     """
+    #     path_FP = os.path.join(self.current_folder.get(), 'FP')
+    #     if not os.path.exists(path_FP):
+    #         os.mkdir(path_FP)
+    #     return path_FP
+
+    # def make_folder_QQ(self):
+    #     """
+    #     Make a folder to move Uncertain clips to
+    #     """
+    #     path_QQ = os.path.join(self.current_folder.get(), 'QQ')
+    #     if not os.path.exists(path_QQ):
+    #         os.mkdir(path_QQ)
+    #     return path_QQ
+    
+
+    def identification_move(self, response):
+        #make the folder to hold the validated clip depending on response
+        path = self.make_folder(foldername = response)
         #name for file when moved
-        file_target = os.path.join(path_FP, os.path.split(self.current_file.get())[1])
+        file_target = os.path.join(path, os.path.split(self.current_file.get())[1])
         os.rename(self.current_file.get(), file_target)
-        #need to remove file from list as no longer in top level folder
-        
+
+        # TO DO need to remove file from list as no longer in top level folder
         
         #increment counter
         self.file_jump(1)
+
+    # def identification_false(self):
+    #     #make the folder to hold the false positive
+    #     path_FP = self.make_folder('FP')
+    #     #name for file when moved
+    #     file_target = os.path.join(path_FP, os.path.split(self.current_file.get())[1])
+    #     os.rename(self.current_file.get(), file_target)
+
+    #     # TO DO need to remove file from list as no longer in top level folder
         
-    def identification_uncertain(self):
-        #make the folder to hold the false positive
-        path_QQ = self.make_folder_QQ()
-        #name for file when moved
-        file_target = os.path.join(path_QQ, os.path.split(self.current_file.get())[1])
-        os.rename(self.current_file.get(), file_target)
-        #need to remove file from list as no longer in top level folder
+    #     #increment counter
+    #     self.file_jump(1)
         
-        #increment counter
-        self.file_jump(1)
+    # def identification_uncertain(self):
+    #     #make the folder to hold the false positive
+    #     path_QQ = self.make_folder('QQ')
+    #     #name for file when moved
+    #     file_target = os.path.join(path_QQ, os.path.split(self.current_file.get())[1])
+    #     os.rename(self.current_file.get(), file_target)
+
+    #     #TO DO need to remove file from list as no longer in top level folder
+        
+    #     #increment counter
+    #     self.file_jump(1)
         
 
 class Page(tk.Frame):
@@ -320,18 +344,26 @@ class Page_multiple(Page):
         button_select_folder.pack(side="left", anchor='nw', padx=5, pady=5)
         
         button_backward = tk.Button(frame_actions, text="Previous file", command=lambda: actions.file_jump(-1), font=("Arial", 12))
-        button_backward.pack(side="left", padx=(300,15), pady=5)
+        button_backward.pack(side="left", padx=(150,15), pady=5)
         button_play = tk.Button(frame_actions, text="Play", command=lambda: actions.play(), bg = self.blue, fg='white', font=("Arial", 12))
         button_play.pack(side="left", padx=5, pady=5)
         button_forward = tk.Button(frame_actions, text="Next file", command=lambda: actions.file_jump(1), font=("Arial", 12))
         button_forward.pack(side="left", padx=15, pady=5)
 
-        button_true = tk.Button(frame_response, text="Correct", command=lambda: actions.identification_true(), bg = self.bluel, font=("Arial", 12))
-        button_true.pack(side="left", padx=(300,15), pady=5)
-        button_false = tk.Button(frame_response, text="Incorrect", command=lambda: actions.identification_false(), bg = self.redl, font=("Arial", 12))
+        button_true = tk.Button(frame_response, text="Correct", command=lambda: actions.identification_move('TruePos'), bg = self.bluel, font=("Arial", 12))
+        button_true.pack(side="left", padx=(150,15), pady=5)
+        button_false = tk.Button(frame_response, text="Incorrect", command=lambda: actions.identification_move('FalsePos'), bg = self.redl, font=("Arial", 12))
         button_false.pack(side="left", padx=5, pady=5)
-        button_quarantine = tk.Button(frame_response, text="Uncertain", command=lambda: actions.identification_uncertain(), bg=self.yellowl, font=("Arial", 12))
+        button_quarantine = tk.Button(frame_response, text="Uncertain", command=lambda: actions.identification_move('Uncertain'), bg=self.yellowl, font=("Arial", 12))
         button_quarantine.pack(side="left", padx=15, pady=5)
+
+        button_TO = tk.Button(frame_response, text="Tawny Owl", command=lambda: actions.identification_move('TO'), bg=self.yellowl, font=("Arial", 12))
+        button_TO.pack(side="left", padx=10, pady=5)
+        button_TO = tk.Button(frame_response, text="Thrush Nightingale", command=lambda: actions.identification_move('FN'), bg=self.yellowl, font=("Arial", 12))
+        button_TO.pack(side="left", padx=10, pady=5)
+        button_TO = tk.Button(frame_response, text="Grey Heron", command=lambda: actions.identification_move('H_'), bg=self.yellowl, font=("Arial", 12))
+        button_TO.pack(side="left", padx=10, pady=5)
+        
         
         
         
