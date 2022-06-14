@@ -1,4 +1,4 @@
 # spectrogram_viewer
 Python Tkinter app to plot and validate spectrograms
 
-![Screenshot](http://github.com/BritishTrustforOrnithology/spectrogram_viewer/images/screengrab.jpg)
+![Screenshot](https://github.com/BritishTrustForOrnithology/spectrogram_viewer/blob/main/images/screengrab.jpg)
