@@ -8,12 +8,21 @@ Two modes:
 
 ### Requires
 
-tkinter, librosa, numpy, math, pathlib, os, matplotlib, winsound
+* Built under Python 3.8
+* tkinter, librosa, numpy, math, pathlib, os, matplotlib, winsound
 
 ### Limitations and known issues
 
 * Currently limited to showing clips of no more than 10s duration
 * Currently limited to read clips at 22050 kHz and frequency axis hard-coded. I may add a config screen to modify this. Window size, hop length etc also currently fixed
-* I haven't yet rebuilt the file array when a file is moved, so the Previous File button fails
 
 ![Screenshot](https://github.com/BritishTrustForOrnithology/spectrogram_viewer/blob/main/images/screengrab.jpg)
+
+
+### Recent bug fixes
+
+* 18/06/2022: File array now updates when a file is moved, so the Previous File button works properly
+
+
+Simon Gillings
+BTO
