@@ -29,7 +29,7 @@ from tkinter import filedialog as fd  # needed for file dialogues
 # for the audio and spectrogram
 import librosa
 import numpy as np
-from math import floor  # for working out x axis
+#from math import floor  # for working out x axis
 
 # for folders and paths
 #import os, glob, pathlib
@@ -88,7 +88,7 @@ class Actions():
             self.audio_files = []
             for filetype in filetypes:
                 self.audio_files.extend(
-                    [filename for filename in pathlib.Path(folder).rglob('*' + filetype)])
+                    [filename for filename in pathlib.Path(folder).glob('*' + filetype)])
 
             #how many files
             self.num_files.set(len(self.audio_files))
@@ -164,6 +164,7 @@ class Actions():
         #     self.duration.get())+1), self.duration.get()))
         # #print(labs)
         self.parent.canvas.draw()
+        print(f'Plotted file = {self.current_file.get()}')
 
     def play(self):
         """
@@ -185,24 +186,6 @@ class Actions():
             os.mkdir(path)
         return path
 
-    # def make_folder_FP(self):
-    #     """
-    #     Make a folder to move False Positive clips to
-    #     """
-    #     path_FP = os.path.join(self.current_folder.get(), 'FP')
-    #     if not os.path.exists(path_FP):
-    #         os.mkdir(path_FP)
-    #     return path_FP
-
-    # def make_folder_QQ(self):
-    #     """
-    #     Make a folder to move Uncertain clips to
-    #     """
-    #     path_QQ = os.path.join(self.current_folder.get(), 'QQ')
-    #     if not os.path.exists(path_QQ):
-    #         os.mkdir(path_QQ)
-    #     return path_QQ
-    
 
     def identification_move(self, response):
         #make the folder to hold the validated clip depending on response
@@ -211,35 +194,17 @@ class Actions():
         file_target = os.path.join(path, os.path.split(self.current_file.get())[1])
         os.rename(self.current_file.get(), file_target)
 
-        # TO DO need to remove file from list as no longer in top level folder
-        
-        #increment counter
-        self.file_jump(1)
+        print(f'File was = {self.current_file.get()}')
+        # need to remove file from list as no longer in top level folder
+        cf = pathlib.WindowsPath(self.current_file.get())
+        self.audio_files.remove(cf)
 
-    # def identification_false(self):
-    #     #make the folder to hold the false positive
-    #     path_FP = self.make_folder('FP')
-    #     #name for file when moved
-    #     file_target = os.path.join(path_FP, os.path.split(self.current_file.get())[1])
-    #     os.rename(self.current_file.get(), file_target)
+        #update number of files
+        self.num_files.set(len(self.audio_files))
+      
+        #increment counter by 0 to flush new states on current file variables
+        self.file_jump(0)
 
-    #     # TO DO need to remove file from list as no longer in top level folder
-        
-    #     #increment counter
-    #     self.file_jump(1)
-        
-    # def identification_uncertain(self):
-    #     #make the folder to hold the false positive
-    #     path_QQ = self.make_folder('QQ')
-    #     #name for file when moved
-    #     file_target = os.path.join(path_QQ, os.path.split(self.current_file.get())[1])
-    #     os.rename(self.current_file.get(), file_target)
-
-    #     #TO DO need to remove file from list as no longer in top level folder
-        
-    #     #increment counter
-    #     self.file_jump(1)
-        
 
 class Page(tk.Frame):
     def __init__(self, *args, **kwargs):
