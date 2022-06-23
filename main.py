@@ -65,7 +65,12 @@ class Actions():
         self.current_folder = tk.StringVar()
         self.num_files = tk.IntVar()
         self.duration = tk.DoubleVar()
-
+        self.spect_scale = tk.StringVar()
+        
+        #defaults
+        self.spect_scale.set('Linear')
+        
+        
     # method to select a single file, and if selected, open it
     def select_file(self):
         audio_file = fd.askopenfilename(
@@ -146,6 +151,7 @@ class Actions():
         # Get the audio data and prepare
         #x, sr = librosa.load(file, sr = 22050, mono = True)
         D = librosa.amplitude_to_db(np.abs(librosa.stft(x, n_fft = 1024, hop_length=256, win_length=1024)), ref=np.max)
+        print(self.spect_scale.get())
         # determine x scale
         #print(D.shape)
         #xsteps = D.shape[1] / self.duration.get()
@@ -205,6 +211,13 @@ class Actions():
         #increment counter by 0 to flush new states on current file variables
         self.file_jump(0)
 
+    # Change the label text
+    # def show(self):
+    #     label.config( text = clicked.get() )
+
+    # def update_yscale(self):
+    #     self.lift()
+
 
 class Page(tk.Frame):
     def __init__(self, *args, **kwargs):
@@ -218,7 +231,6 @@ class Page(tk.Frame):
         self.yellow = '#997700'
         self.yellowl = '#EECC66'
         
-
     def show(self):
         self.lift()
 
@@ -322,12 +334,14 @@ class Page_multiple(Page):
         button_quarantine = tk.Button(frame_response, text="Uncertain", command=lambda: actions.identification_move('Uncertain'), bg=self.yellowl, font=("Arial", 12))
         button_quarantine.pack(side="left", padx=15, pady=5)
 
-        button_TO = tk.Button(frame_response, text="Tawny Owl", command=lambda: actions.identification_move('TO'), bg=self.yellowl, font=("Arial", 12))
-        button_TO.pack(side="left", padx=10, pady=5)
-        button_TO = tk.Button(frame_response, text="Thrush Nightingale", command=lambda: actions.identification_move('FN'), bg=self.yellowl, font=("Arial", 12))
-        button_TO.pack(side="left", padx=10, pady=5)
-        button_TO = tk.Button(frame_response, text="Grey Heron", command=lambda: actions.identification_move('H_'), bg=self.yellowl, font=("Arial", 12))
-        button_TO.pack(side="left", padx=10, pady=5)
+        button_CE = tk.Button(frame_response, text="Corncrake", command=lambda: actions.identification_move('CE'), bg=self.yellowl, font=("Arial", 12))
+        button_CE.pack(side="left", padx=10, pady=5)
+        button_FN = tk.Button(frame_response, text="Thrush Nightingale", command=lambda: actions.identification_move('FN'), bg=self.yellowl, font=("Arial", 12))
+        button_FN.pack(side="left", padx=10, pady=5)
+        button_VW = tk.Button(frame_response, text="River Warbler", command=lambda: actions.identification_move('VW'), bg=self.yellowl, font=("Arial", 12))
+        button_VW.pack(side="left", padx=10, pady=5)
+        button_H_ = tk.Button(frame_response, text="Grey Heron", command=lambda: actions.identification_move('H_'), bg=self.yellowl, font=("Arial", 12))
+        button_H_.pack(side="left", padx=10, pady=5)
         
         
         
@@ -352,6 +366,55 @@ class Page_multiple(Page):
         #value_duration.pack(side="left", pady=2)
 
 
+class Page_config(Page):
+    def __init__(self, *args, **kwargs):
+        Page.__init__(self, *args, **kwargs)
+
+        
+
+
+        # MAIN ACTIONS
+        # instance of Actions to be able to call actions
+        actions = Actions(self)
+
+        # MAIN PAGE STRUCTURE
+        # frames
+        frame_title = tk.Frame(self, bg='white')
+        frame_title.pack(side="top", fill="x", expand=False)
+        frame_spect = tk.Frame(self, bg ='white')
+        frame_spect.pack(side="top", fill="x", expand=False)
+        # frame_actions = tk.Frame(self, bg='white')
+        # frame_actions.pack(side="top", fill="x", expand=False)
+        # infoframe2 = tk.Frame(self, bg='white')
+        # infoframe2.pack(side="top", fill="x", expand=False)
+        # frame_spec = tk.Frame(self, bg='white')
+        # frame_spec.pack(side="top", fill="both", expand=True)
+        # frame_response = tk.Frame(self, bg='white')
+        # frame_response.pack(side="top", fill="x", expand=False)
+        options_yscale = ['Linear', 'Mel']
+
+        
+
+        # MAIN ACTIONS
+        # instance of Actions to be able to call actions
+        actions = Actions(self)
+
+        # buttons
+        # button_select_file = tk.Button(frame_file, text="Select audio file", command=lambda: actions.select_file(), font=("Arial", 12))
+        # button_select_file.pack(side="left", padx=5, pady=5)
+      
+        
+        # title frame
+        label_title = tk.Label(frame_title, text='Configuration settings', bg='white', font=("Arial", 12))
+        label_title.pack(side="left", padx=10, pady=2)
+
+        # spectrogram settings
+        label_yscale = tk.Label(frame_spect, text='Spectrogram y-axis', bg='white', font=("Arial", 10))
+        label_yscale.pack(side="left", padx=10, pady=2)
+        drop_yscale = tk.OptionMenu(frame_spect, actions.spect_scale, *options_yscale)
+        drop_yscale.pack(side="left", padx=10, pady=2)
+
+
 class MainView(tk.Frame):
     def __init__(self, *args, **kwargs):
         tk.Frame.__init__(self, *args, **kwargs)
@@ -360,6 +423,7 @@ class MainView(tk.Frame):
 
         p1 = Page_single(self)
         p2 = Page_multiple(self)
+        p3 = Page_config(self)
 
         buttonframe = tk.Frame(self, bg='grey')
         buttonframe.pack(side="top", fill="x", expand=False)
@@ -368,16 +432,19 @@ class MainView(tk.Frame):
 
         p1.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         p2.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        p3.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
 
         b1 = tk.Button(buttonframe, text="Single file", command=p1.show, font=("Arial", 12))
         b2 = tk.Button(buttonframe, text="Multiple files", command=p2.show, font=("Arial", 12))
-        b3 = tk.Button(buttonframe, text="Quit", command=root.destroy, font=("Arial", 12))
+        b3 = tk.Button(buttonframe, text="Config", command=p3.show, font=("Arial", 12))
+        b4 = tk.Button(buttonframe, text="Quit", command=root.destroy, font=("Arial", 12))
 
         b1.pack(side="left")
         b2.pack(side="left")
         b3.pack(side="left")
+        b4.pack(side="left")
 
-        p1.show()
+        p2.show()
 
 
 if __name__ == "__main__":
